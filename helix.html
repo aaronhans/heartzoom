@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>three.js css3d</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+html, body {
+	height: 100%;
+}
+body {
+	background-color: #000000;
+	margin: 0;
+	font-family: Helvetica, sans-serif;;
+	overflow: hidden;
+}
+.element {
+	width: 120px;
+	height: 160px;
+	cursor: default;
+}
+.icon--heart-full--sr-card {
+  width: 56px;
+  height: 54px;
+  stroke: #fff;
+  position:absolute;
+  top:50px;left:30px;
+}
+.icon.icon--heart-full {
+  stroke-width: 4em;
+  cursor: pointer;
+}
+.icon.icon--inactive-with-stroke {
+  stroke: silver;
+  stroke-width: 4em;
+}
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script src="js/tween.min.js"></script>
+		<script src="js/TrackballControls.js"></script>
+		<script src="js/CSS3DRenderer.js"></script>
+
+		<div id="container"></div>
+
+		<script>
+			var camera, scene, renderer;
+			var controls;
+
+			var objects = [];
+			var targets = {helix: [] };
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 200;
+				camera.position.x = 0;
+				camera.position.y = -6000;
+
+				scene = new THREE.Scene();
+
+				var vector = new THREE.Vector3();
+				var cylindrical = new THREE.Cylindrical();
+
+				for ( var i = 0; i < 500; i++ ) {
+
+					var element = document.createElement( 'div' );
+					element.className = 'element';
+					//element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+
+					var symbol = document.createElement( 'div' );
+					symbol.className = 'symbol';
+					symbol.innerHTML = '<a class="heart-save-icon js-save-property-heart" href="#"><svg fill="#'+Math.floor(Math.random()*16777215).toString(16)+'" class="icon icon--heart-full icon--heart-full--sr-card icon--inactive-with-stroke" viewBox="0 0 1000 1024"><path class="path1" d="M946.2,362.4l0,0.4c-4.6,71.3-46.8,154.5-129,254.6c-70.8,86.2-161.7,173.6-249.4,255.2 c-6.7,6.3-15.1,14-23.8,22l-0.4,0.4c-18.1,16.7-36.8,34.1-45,42l-17.4,16.9L463.7,937c-15.2-14.8-56.8-54.3-82.2-77.2 c-87.9-79.4-179.1-164.5-250.3-248.5C48.7,513.8,6.4,432.8,1.8,363.5l0-0.4c-4.5-95.2,30.1-177.8,97.5-232.6 c47.9-39,109.2-60.4,172.6-60.4c30.1,0,59.4,4.9,86.9,14.6c45.2,16.1,84.9,43.2,115.2,78.4c30.6-35.5,70.3-62.6,115.3-78.4 c27.3-9.6,56.5-14.5,86.5-14.5c63.4,0,124.8,21.4,172.9,60.3l0,0C916.1,185.3,950.8,267.7,946.2,362.4z"></path></svg>';
+					element.appendChild( symbol );
+
+					var object = new THREE.CSS3DObject( element );
+					var theta = i * 0.175 + Math.PI;
+					var y = - ( i * 8 ) + 450;
+
+					cylindrical.set( 900, theta, y );
+					// helix math taken from mrdoob's periodic table demo: https://threejs.org/examples/css3d_periodictable.html
+					object.position.setFromCylindrical( cylindrical );
+
+					vector.x = object.position.x * 2;
+					vector.y = object.position.y;
+					vector.z = object.position.z * 2;
+
+					scene.add( object );
+					object.lookAt( vector );
+
+					objects.push( object );
+
+				}
+
+
+				renderer = new THREE.CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.domElement.style.position = 'absolute';
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+				//
+
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
+				controls.rotateSpeed = 1;
+				controls.minDistance = 500;
+				controls.maxDistance = 6000;
+				controls.addEventListener( 'change', render );
+
+				render()
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
+
+			}
+
+			function animate() {
+				camera.position.y = camera.position.y + 10;
+				if(camera.position.y > 6000) {
+					camera.position.y = -6000;
+				}
+
+				requestAnimationFrame( animate );
+
+				TWEEN.update();
+
+				controls.update();
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+	</body>
+</html>
